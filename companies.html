@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpportunityHub — Top Companies Hiring in India</title>
+<meta name="description" content="OpportunityHub — India's smartest career platform for Jobs, Internships, Hackathons, Resume Builder & Interview Practice.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="index.css">
+<style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}</style>
+</head>
+<body>
+
+<!-- ═══════════════ NAVBAR ═══════════════ -->
+<nav>
+  <a class="logo" href="index.html">
+    <div class="logo-icon">🏆</div>
+    OpportunityHub
+  </a>
+  <ul class="nav-links">
+    <li><a id="nav-home" href="index.html">🏠 Home</a></li>
+    <li><a id="nav-jobs" href="index.html?tab=job">💼 Jobs</a></li>
+    <li><a id="nav-internships" href="index.html?tab=internship">🎓 Internships</a></li>
+    <li><a id="nav-hackathons" href="index.html?tab=hackathon">💻 Hackathons</a></li>
+    <li><a id="nav-companies" class="active" href="companies.html">🏢 Companies</a></li>
+    <li><a id="nav-practice" href="practice.html">🎯 Interview Prep</a></li>
+    <li><a id="nav-resume" href="resume.html">📄 Resume Builder</a></li>
+    <li><a id="nav-dashboard" href="dashboard.html">📊 Dashboard</a></li>
+    <li><a id="nav-monetize" href="monetize.html">💰 Earn Money</a></li>
+    <li><a id="nav-employers" href="employers.html">🤝 For Employers</a></li>
+  </ul>
+  <div class="nav-actions">
+    <button class="btn-theme" id="themeBtn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+    <button class="btn-signin" id="btnSignIn" onclick="openModal('signinModal')">Login</button>
+    <button class="btn-signup" id="btnSignUp" onclick="openModal('signupModal')">Sign Up</button>
+  </div>
+</nav>
+
+
+<div id="page-companies" class="page active">
+  <div class="page-header">
+    <h2>🏢 Top Companies Hiring in India — 2026</h2>
+    <p>Explore company profiles, culture, tech stacks, and all open roles in one place.</p>
+  </div>
+  <div class="companies-grid" id="companiesGrid"></div>
+</div>
+
+<!-- ═══════════════ MODALS ═══════════════ -->
+
+<!-- Sign In Modal -->
+<div class="modal-overlay" id="signinModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('signinModal')">✕</button>
+    <h2>Welcome back 👋</h2>
+    <p class="modal-sub">Sign in to your OpportunityHub account</p>
+    <div class="modal-field"><label>Email Address</label><input id="siEmail" type="email" placeholder="you@example.com"></div>
+    <div class="modal-field"><label>Password</label><input id="siPass" type="password" placeholder="••••••••"></div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" onclick="closeModal('signinModal')">Cancel</button>
+      <button class="modal-btn-submit" onclick="signIn()">Sign In →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Sign Up Modal -->
+<div class="modal-overlay" id="signupModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('signupModal')">✕</button>
+    <h2>Create account 🎉</h2>
+    <p class="modal-sub">Join 1.2M+ Indians discovering their next opportunity</p>
+    <div class="modal-field"><label>Full Name *</label><input id="suName" type="text" placeholder="Your full name"></div>
+    <div class="modal-field"><label>Email Address *</label><input id="suEmail" type="email" placeholder="you@example.com"></div>
+    <div class="modal-field"><label>Phone Number</label><input id="suPhone" type="tel" placeholder="+91 98765 43210"></div>
+    <div class="modal-field"><label>Password *</label><input id="suPass" type="password" placeholder="Create a strong password"></div>
+    <div class="modal-field"><label>I am a</label>
+      <select id="suRole">
+        <option>Job Seeker</option>
+        <option>Student / Intern</option>
+        <option>Fresher (2025/2026 Graduate)</option>
+        <option>Working Professional</option>
+        <option>Employer / Recruiter</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" onclick="closeModal('signupModal')">Cancel</button>
+      <button class="modal-btn-submit" onclick="signUp()">Create Account →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Post Job Modal -->
+<div class="modal-overlay" id="postJobModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('postJobModal')">✕</button>
+    <h2>Post a Job / Internship</h2>
+    <p class="modal-sub">Reach 1.2M+ candidates across India</p>
+    <div class="modal-field"><label>Job Title *</label><input type="text" placeholder="e.g. Software Engineer, Data Analyst Intern"></div>
+    <div class="modal-field"><label>Company Name *</label><input type="text" placeholder="Your company name"></div>
+    <div class="modal-field"><label>Location (State)</label><input type="text" placeholder="e.g. Karnataka / Remote"></div>
+    <div class="modal-field"><label>Type</label>
+      <select><option>Full-time Job</option><option>Internship</option><option>Part-time</option><option>Hackathon / Contest</option></select>
+    </div>
+    <div class="modal-field"><label>Salary / Stipend Range</label><input type="text" placeholder="e.g. ₹8–12 LPA / ₹20,000/month"></div>
+    <div class="modal-field"><label>Job Description</label><textarea placeholder="Role overview, responsibilities, requirements..."></textarea></div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" onclick="closeModal('postJobModal')">Cancel</button>
+      <button class="modal-btn-submit" onclick="closeModal('postJobModal');showToast('✅ Job posted! It will go live after review.')">Post Job →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Interview Question Practice Modal -->
+<div class="modal-overlay" id="iqModal">
+  <div class="modal" style="width:600px;">
+    <button class="modal-close" onclick="closeModal('iqModal')">✕</button>
+    <div class="iq-header">
+      <h2 id="iqFieldLabel">Interview Practice</h2>
+      <span class="iq-progress" id="iqProgress">1 / 25</span>
+    </div>
+    <div class="iq-question" id="iqQuestion">Loading question...</div>
+    <textarea class="iq-answer" id="iqAnswer" placeholder="Type your answer here... Practice makes perfect!"></textarea>
+    <div class="iq-hint" id="iqHint"></div>
+    <div class="iq-nav">
+      <button class="iq-btn" id="iqPrevBtn" onclick="iqPrev()" disabled>← Previous</button>
+      <button class="iq-btn" onclick="toggleHint()">💡 Hint</button>
+      <button class="iq-btn primary" id="iqNextBtn" onclick="iqNext()">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span class="toast-icon">✦</span>
+  <span id="toastMsg"></span>
+</div>
+
+<!-- JS Files -->
+<script src="data.js"></script>
+<script src="questions.js"></script>
+<script src="resume.js"></script>
+<script src="api.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>
