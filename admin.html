@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpportunityHub — Admin Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="index.css">
+<style>
+  .admin-login { max-width:400px; margin:80px auto; padding:40px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); }
+  .admin-login h2 { font-family:'Syne',sans-serif; margin-bottom:20px; }
+  .admin-login input { width:100%; padding:12px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg); color:var(--text); font-size:1rem; margin-bottom:16px; font-family:'DM Sans',sans-serif; }
+  .admin-login button { width:100%; padding:12px; border:none; border-radius:var(--radius-sm); background:var(--text); color:var(--bg); font-family:'DM Sans',sans-serif; font-size:1rem; font-weight:600; cursor:pointer; }
+  .admin-login button:hover { opacity:0.9; }
+
+  .admin-panel { display:none; max-width:1200px; margin:0 auto; padding:32px; }
+  .admin-panel.visible { display:block; }
+
+  .stat-cards { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:40px; }
+  .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:24px; text-align:center; }
+  .stat-card .sc-val { font-family:'Syne',sans-serif; font-size:2rem; font-weight:800; margin-bottom:4px; }
+  .stat-card .sc-label { font-size:0.85rem; color:var(--text-muted); }
+  .stat-card.revenue .sc-val { color:#10b981; }
+  .stat-card.users .sc-val { color:#4f8ef7; }
+  .stat-card.clicks .sc-val { color:#fb923c; }
+  .stat-card.today .sc-val { color:#a78bfa; }
+
+  .admin-section { margin-bottom:40px; }
+  .admin-section h3 { font-family:'Syne',sans-serif; font-size:1.3rem; margin-bottom:16px; }
+
+  .admin-table { width:100%; border-collapse:collapse; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+  .admin-table th { padding:12px 16px; text-align:left; font-size:0.8rem; color:var(--text-muted); border-bottom:1px solid var(--border); background:var(--surface2); font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }
+  .admin-table td { padding:10px 16px; font-size:0.88rem; border-bottom:1px solid var(--border); }
+  .admin-table tr:last-child td { border-bottom:none; }
+  .admin-table tr:hover td { background:var(--surface2); }
+
+  .badge-role { display:inline-block; padding:3px 10px; border-radius:20px; font-size:0.75rem; font-weight:600; }
+  .badge-role.seeker { background:#4f8ef722; color:#4f8ef7; }
+  .badge-role.student { background:#a78bfa22; color:#a78bfa; }
+  .badge-role.professional { background:#10b98122; color:#10b981; }
+  .badge-role.employer { background:#fb923c22; color:#fb923c; }
+
+  .top-bar { display:flex; justify-content:space-between; align-items:center; margin-bottom:32px; }
+  .top-bar h2 { font-family:'Syne',sans-serif; font-size:1.8rem; }
+  .refresh-btn { padding:10px 20px; border:1px solid var(--border); border-radius:var(--radius-sm); background:transparent; color:var(--text); cursor:pointer; font-family:'DM Sans',sans-serif; font-size:0.9rem; }
+  .refresh-btn:hover { background:var(--surface2); }
+
+  @media(max-width:768px) { .stat-cards { grid-template-columns:repeat(2,1fr); } }
+</style>
+</head>
+<body>
+
+<!-- Login Gate -->
+<div id="adminLogin" class="admin-login">
+  <h2>🔒 Admin Access</h2>
+  <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:20px;">Enter your admin key to access the dashboard</p>
+  <input type="password" id="adminKeyInput" placeholder="Admin Key" onkeydown="if(event.key==='Enter')adminAuth()">
+  <button onclick="adminAuth()">Access Dashboard →</button>
+  <p id="adminError" style="color:var(--red);font-size:0.82rem;margin-top:12px;display:none;"></p>
+</div>
+
+<!-- Admin Panel (hidden until auth) -->
+<div id="adminPanel" class="admin-panel">
+  <div class="top-bar">
+    <h2>📊 OpportunityHub Admin</h2>
+    <div style="display:flex;gap:10px;">
+      <button class="refresh-btn" onclick="loadAdmin()">🔄 Refresh</button>
+      <a href="index.html" class="refresh-btn" style="text-decoration:none;">← Back to Site</a>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stat-cards">
+    <div class="stat-card users">
+      <div class="sc-val" id="statUsers">—</div>
+      <div class="sc-label">Total Users</div>
+    </div>
+    <div class="stat-card revenue">
+      <div class="sc-val" id="regRevenue">—</div>
+      <div class="sc-label">Reg. Earnings (₹10/user)</div>
+    </div>
+    <div class="stat-card clicks">
+      <div class="sc-val" id="statClicks">—</div>
+      <div class="sc-label">Apply Clicks</div>
+    </div>
+    <div class="stat-card revenue">
+      <div class="sc-val" id="statRevenue">—</div>
+      <div class="sc-label">Click Earnings (Est.)</div>
+    </div>
+  </div>
+
+  <!-- Users Table -->
+  <div class="admin-section">
+    <h3>👥 Registered Users</h3>
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Role</th>
+          <th>Applications</th>
+          <th>Registered</th>
+        </tr>
+      </thead>
+      <tbody id="usersTableBody">
+        <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:30px;">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Clicks Table -->
+  <div class="admin-section">
+    <h3>🖱️ Recent Apply Clicks</h3>
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Job Title</th>
+          <th>Company</th>
+          <th>Type</th>
+          <th>Platform</th>
+          <th>Est. Revenue</th>
+          <th>Time</th>
+        </tr>
+      </thead>
+      <tbody id="clicksTableBody">
+        <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:30px;">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Top Companies -->
+  <div class="admin-section">
+    <h3>🏆 Top Companies by Clicks</h3>
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Company</th>
+          <th>Total Clicks</th>
+          <th>Est. Revenue (₹)</th>
+        </tr>
+      </thead>
+      <tbody id="topCompaniesBody">
+        <tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:30px;">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const API_BASE = window.location.origin;
+let ADMIN_KEY = '';
+
+function adminAuth() {
+  ADMIN_KEY = document.getElementById('adminKeyInput').value;
+  if (!ADMIN_KEY) {
+    document.getElementById('adminError').textContent = 'Please enter the admin key';
+    document.getElementById('adminError').style.display = 'block';
+    return;
+  }
+  // Try fetching stats to verify key
+  fetch(`${API_BASE}/api/admin/stats`, {
+    headers: { 'x-admin-key': ADMIN_KEY }
+  })
+  .then(r => {
+    if (!r.ok) throw new Error('Invalid admin key');
+    return r.json();
+  })
+  .then(() => {
+    document.getElementById('adminLogin').style.display = 'none';
+    document.getElementById('adminPanel').classList.add('visible');
+    loadAdmin();
+  })
+  .catch(err => {
+    document.getElementById('adminError').textContent = '❌ Invalid admin key. Access denied.';
+    document.getElementById('adminError').style.display = 'block';
+  });
+}
+
+async function loadAdmin() {
+  const headers = { 'x-admin-key': ADMIN_KEY };
+
+  try {
+    // Load stats
+    const statsRes = await fetch(`${API_BASE}/api/admin/stats`, { headers });
+    const stats = await statsRes.json();
+    document.getElementById('statUsers').textContent = stats.totalUsers.toLocaleString('en-IN');
+    document.getElementById('statClicks').textContent = stats.totalClicks.toLocaleString('en-IN');
+    document.getElementById('statRevenue').textContent = '₹' + stats.totalRevenue.toLocaleString('en-IN');
+    
+    // Calculate registration revenue (e.g. ₹10 per signup)
+    const regRev = stats.totalUsers * 10;
+    document.getElementById('regRevenue').textContent = '₹' + regRev.toLocaleString('en-IN');
+
+    // Top companies
+    if (stats.topCompanies && stats.topCompanies.length > 0) {
+      document.getElementById('topCompaniesBody').innerHTML = stats.topCompanies.map((c, i) =>
+        `<tr><td>${i+1}</td><td>${c._id}</td><td>${c.clicks}</td><td>₹${c.revenue.toLocaleString('en-IN')}</td></tr>`
+      ).join('');
+    } else {
+      document.getElementById('topCompaniesBody').innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:20px;">No click data yet</td></tr>';
+    }
+
+    // Load users
+    const usersRes = await fetch(`${API_BASE}/api/admin/users`, { headers });
+    const users = await usersRes.json();
+    if (users.length > 0) {
+      document.getElementById('usersTableBody').innerHTML = users.map((u, i) => {
+        const roleClass = u.role.includes('Seeker') ? 'seeker' : u.role.includes('Student') ? 'student' : u.role.includes('Professional') ? 'professional' : 'employer';
+        const date = new Date(u.createdAt).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+        return `<tr>
+          <td>${i+1}</td>
+          <td><strong>${u.name}</strong></td>
+          <td>${u.email}</td>
+          <td>${u.phone || '—'}</td>
+          <td><span class="badge-role ${roleClass}">${u.role}</span></td>
+          <td>${(u.applications || []).length}</td>
+          <td>${date}</td>
+        </tr>`;
+      }).join('');
+    } else {
+      document.getElementById('usersTableBody').innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:30px;">No users registered yet</td></tr>';
+    }
+
+    // Load clicks
+    const clicksRes = await fetch(`${API_BASE}/api/admin/clicks`, { headers });
+    const clicks = await clicksRes.json();
+    if (clicks.length > 0) {
+      document.getElementById('clicksTableBody').innerHTML = clicks.map((c, i) => {
+        const time = new Date(c.createdAt).toLocaleString('en-IN', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+        return `<tr>
+          <td>${i+1}</td>
+          <td>${c.jobTitle}</td>
+          <td>${c.company}</td>
+          <td>${c.jobType}</td>
+          <td>${c.affiliatePlatform}</td>
+          <td style="color:#10b981;">₹${c.estimatedRevenue}</td>
+          <td>${time}</td>
+        </tr>`;
+      }).join('');
+    } else {
+      document.getElementById('clicksTableBody').innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:30px;">No clicks tracked yet</td></tr>';
+    }
+
+  } catch (err) {
+    console.error('Admin load error:', err);
+  }
+}
+</script>
+
+</body>
+</html>
